@@ -48,7 +48,7 @@
     "tailwind-merge": "^2.2.1",
     "tailwindcss-animate": "^1.0.7",
     "validator": "^13.11.0",
-    "web3": "^4.7.0",
+    "web3": "^4.15.0",
     "web3-eth-contract": "^4.3.0",
     "zod": "^3.22.5",
     "zustand": "^4.5.2"
