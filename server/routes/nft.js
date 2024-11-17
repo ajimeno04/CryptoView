@@ -54,5 +54,10 @@ const { fetchNFTMetadata } = require("../controllers/nftController");
  *         description: Server error
  */
 router.get("/:contractAddress/:tokenId", fetchNFTMetadata);
-
+// 404 Error Handler
+router.use((req, res) => {
+    res.status(404).json({
+      error: 'NFT not found',
+    });
+  });
 module.exports = router;
