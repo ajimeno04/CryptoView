@@ -9,19 +9,45 @@ const web3 = new Web3(process.env.RPC_URL); // Initialize Web3 with RPC URL
  * Fetches metadata for a specific NFT using its contract address and token ID.
  * - Retrieves the `tokenURI` from the blockchain.
  * - Fetches the metadata JSON from the `tokenURI`.
- * - Stores the metadata in MongoDB and returns it in the response.
+ * - Returns the metadata in the response.
  */
 const fetchNFTMetadata = async (req, res) => {
-  const { contractAddress, tokenId } = req.params; // Extract parameters from the request
+  const { contractAddress, tokenId } = req.params;
+
+  // Validate inputs
+  if (!web3.utils.isAddress(contractAddress)) {
+    return res.status(400).json({ error: "Invalid contract address format" });
+  }
+  if (!/^\d+$/.test(tokenId)) {
+    return res.status(400).json({ error: "Invalid token ID format. It must be a numeric string." });
+  }
 
   try {
-    const contract = new web3.eth.Contract(nftAbi, contractAddress); // Initialize contract instance
-    const tokenURI = await contract.methods.tokenURI(tokenId).call(); // Get the tokenURI for the NFT
+    // Initialize the contract instance
+    const contract = new web3.eth.Contract(nftAbi, contractAddress);
 
-    const metadataResponse = await fetch(tokenURI); // Fetch metadata JSON from the URI
+    let tokenURI;
+    try {
+      // Retrieve the tokenURI for the NFT
+      tokenURI = await contract.methods.tokenURI(tokenId).call();
+    } catch (err) {
+      console.error("Error fetching tokenURI from the contract:", err);
+      return res.status(404).json({ error: "Token not found or invalid contract interaction" });
+    }
 
-    const metadata = await metadataResponse.json(); // Parse metadata as JSON
-    console.log(metadata);
+    let metadata;
+    try {
+      // Fetch metadata JSON from the tokenURI
+      const metadataResponse = await fetch(tokenURI);
+      if (!metadataResponse.ok) {
+        throw new Error(`Failed to fetch metadata from ${tokenURI}`);
+      }
+      metadata = await metadataResponse.json();
+    } catch (err) {
+      console.error("Error fetching or parsing metadata:", err);
+      return res.status(500).json({ error: "Failed to retrieve or parse NFT metadata" });
+    }
+
     // Save metadata to MongoDB
     const nft = await NFT.create({
       contractAddress,
@@ -31,10 +57,11 @@ const fetchNFTMetadata = async (req, res) => {
       image: metadata.image,
     });
 
-    res.status(200).json(nft); // Respond with the stored metadata
+    // Respond with the stored metadata
+    res.status(200).json(nft);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Failed to retrieve NFT metadata" }); // Handle errors gracefully
+    console.error("Internal server error:", error);
+    res.status(500).json({ error: "An unexpected error occurred while processing the request" });
   }
 };
 

@@ -7,6 +7,8 @@ const router = express.Router();
  * /api/token-balance/{walletAddress}/{tokenContractAddress}:
  *   get:
  *     summary: Retrieve and save token balance
+ *     tags:
+ *       - Token Balance
  *     description: Fetch the balance of a specified token for a given wallet address and save it in the database.
  *     parameters:
  *       - in: path
@@ -39,6 +41,8 @@ const router = express.Router();
  *                   type: number
  *       400:
  *         description: Invalid input.
+ *       404:
+ *        description: No token balance found for the specified wallet and contract address.
  *       500:
  *         description: Internal server error.
  */

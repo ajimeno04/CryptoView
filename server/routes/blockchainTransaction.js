@@ -2,11 +2,14 @@ const express = require('express');
 const { fetchPolygonTransactions } = require('../controllers/blockchainTransactionController');
 
 const router = express.Router();
+
 /**
  * @swagger
  * /api/blockchain-transaction/{address}:
  *   get:
  *     summary: Fetch the last 5 transactions for an address
+ *     tags:
+ *       - Retrieve Blockchain Transaction
  *     description: Retrieve the last 5 transactions for a cryptocurrency address and store them in MongoDB.
  *     parameters:
  *       - in: path
@@ -14,10 +17,11 @@ const router = express.Router();
  *         required: true
  *         schema:
  *           type: string
- *         description: Cryptocurrency address to fetch transactions for
+ *         description: Cryptocurrency address to fetch transactions for.
+ *         example: "0x1234...abcd"
  *     responses:
  *       200:
- *         description: A list of the last 5 transactions
+ *         description: A list of the last 5 transactions.
  *         content:
  *           application/json:
  *             schema:
@@ -27,30 +31,26 @@ const router = express.Router();
  *                 properties:
  *                   hash:
  *                     type: string
- *                     description: Transaction hash
+ *                     description: Transaction hash.
  *                   from:
  *                     type: string
- *                     description: Sender address
+ *                     description: Sender address.
  *                   to:
  *                     type: string
- *                     description: Receiver address
+ *                     description: Receiver address.
  *                   value:
  *                     type: string
- *                     description: Value transferred in the transaction
+ *                     description: Value transferred in the transaction.
  *                   timeStamp:
  *                     type: string
- *                     description: Timestamp of the transaction
+ *                     description: Timestamp of the transaction.
+ *       400:
+ *         description: Invalid input. Address must be a valid cryptocurrency address.
  *       404:
- *         description: Address not found or no transactions available
+ *         description: Address not found or no transactions available.
  *       500:
- *         description: Server error
+ *         description: Server error. Unable to process the request.
  */
 router.get('/:address', fetchPolygonTransactions);
 
-// 404 Error Handler
-router.use((req, res) => {
-    res.status(404).json({
-      error: 'Address not found.',
-    });
-  });
 module.exports = router;

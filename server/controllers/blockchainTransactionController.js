@@ -8,6 +8,11 @@ require('dotenv').config();
 const fetchPolygonTransactions = async (req, res) => {
   const { address } = req.params;
 
+  // Validate input
+  if (!address || !/^0x[a-fA-F0-9]{40}$/.test(address)) {
+    return res.status(400).json({ error: 'Invalid address format. Please provide a valid cryptocurrency address.' });
+  }
+
   try {
     // Call Polygonscan API
     const response = await axios.get(`https://api.polygonscan.com/api`, {
@@ -23,13 +28,20 @@ const fetchPolygonTransactions = async (req, res) => {
         apikey: process.env.POLYGONSCAN_API_KEY,
       },
     });
+
     // Handle API errors
     if (response.data.status !== '1') {
-      return res.status(400).json({ error: response.data.message });
+      return res.status(404).json({ error: 'No transactions found or address not found.' });
     }
 
     const transactions = response.data.result;
+
+    if (!transactions || transactions.length === 0) {
+      return res.status(404).json({ error: 'No transactions available for the specified address.' });
+    }
+
     console.log(transactions);
+
     // Save transactions to MongoDB
     for (const tx of transactions) {
       await BlockchainTransaction.create({
@@ -46,7 +58,16 @@ const fetchPolygonTransactions = async (req, res) => {
     res.status(200).json({ message: 'Transactions saved successfully', transactions });
   } catch (error) {
     console.error('Error fetching Polygon transactions:', error);
-    res.status(500).json({ error: 'Failed to fetch transactions' });
+
+    if (error.response) {
+      // If the error comes from the API
+      return res.status(500).json({
+        error: 'Failed to fetch transactions from Polygonscan API. Please try again later.',
+      });
+    }
+
+    // Handle other server errors
+    res.status(500).json({ error: 'An internal server error occurred.' });
   }
 };
 
