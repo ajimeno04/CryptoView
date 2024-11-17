@@ -1,13 +1,12 @@
 //Config express
 const express = require("express");
 const dotenv = require("dotenv");
-const process = require("process");
+const mongoose = require("mongoose");
+const cors = require("cors");
 const workoutRoutes = require("./routes/workouts.js");
 const usersRoutes = require("./routes/users.js");
 const transactionsRoutes = require("./routes/Transactions.js");
 const userPortfolio = require("./routes/userPortfolio.js");
-const mongoose = require("mongoose");
-const cors = require("cors");
 
 dotenv.config();
 
@@ -28,7 +27,11 @@ app.use((req, res, next) => {
   console.log(req.path, req.method);
   next();
 });
+// Swagger documentation setup
+const { swaggerUi, swaggerSpec } = require("./config/swagger");
 
+// Setup API documentation endpoint
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 // routes
 app.use("/api/workouts/", workoutRoutes);
 app.use("/api/portfolio/", userPortfolio);
