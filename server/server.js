@@ -8,6 +8,7 @@ const usersRoutes = require("./routes/users.js");
 const transactionsRoutes = require("./routes/Transactions.js");
 const userPortfolio = require("./routes/userPortfolio.js");
 const nft = require("./routes/nft.js");
+const blockchainTransaction = require("./routes/blockchainTransaction.js");
 
 dotenv.config();
 
@@ -39,6 +40,7 @@ app.use("/api/portfolio/", userPortfolio);
 app.use("/api/transactions/", transactionsRoutes);
 app.use("/api/users/", usersRoutes);
 app.use("/api/nft/", nft);
+app.use("/api/blockchain-transaction/", blockchainTransaction);
 
 //connect to db et lancement du server
 mongoose
